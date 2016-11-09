@@ -1,163 +1,227 @@
 //Constants
-var ROWS=20, COLS=20, BLOCK_WIDTH=5, BLOCK_HEIGHT=1;
+var ROWS=20, COLS=20;
 //IDs
-var EMPTY=0, BLOCK=1, BUILDING=2;
+var EMPTY=0, SNAKE=1, FRUIT=2, GAME_OVER=-1;
 //Directions
-var LEFT=0, RIGHT=1, DOWN=2;
-//Key codes
-var KEY_SPASE=13;
+var LEFT=0, RIGHT=1, UP=2, DOWN=3;
+//Key Codes
+var KEY_LEFT=37, KEY_RIGHT=39, KEY_UP=38, KEY_DOWN=40;
 
 var grid = {
-	width: null,
-	height: null,
-	_grid: null,
 
-	init: function(value, width, height) {
-		this.width = width;
-		this.height = height;
-		this._grid = [];
+    width: null,
+    height: null,
+    _grid:null,
 
-		for (var i = 0; i < width; i++) {
-			this._grid.push([]);
-			for (var j = 0; j < height; j++) {
-				this._grid[i].push(value);
-			}
-		}
-	},
+    init: function(value, width, height) {
+        this.height = height;
+        this.width = width;
 
-	set: function (value, x, y) {
-		this._grid[x][y] = value;
-	},
+        this._grid = [];
 
-	get: function (x, y) {
-		return this._grid[x][y];
-	}
+        for (var i=0; i<width; i++) {
+            this._grid.push([]);
+            for (var j=0; j<height; j++) {
+                this._grid[i].push(value);
+            }
+        }
+    },
+
+    set: function(value, x, y) {
+        this._grid[x][y] = value;
+    },
+
+    get: function(x, y) {
+        return this._grid[x][y];
+    }
 }
 
-var block = {
-	direction: null,
-	last: null,
-	_queue: null,
+var snake = {
 
-	init: function(direction, x, y) {
-		this.direction = direction;
-		this._queue = [];
-		this.insert(x, y);
-	},
+    direction: null,
+    last: null,
+    _queue: null,
 
-	insert: function(x, y) {
-		this._queue.unshift({x:x, y:y});
+    init: function(dir, x, y) {
+        this.direction = dir;
+
+        this._queue = [];
+        this.insert(x, y);
+    },
+
+    insert: function(x, y) {
+        this._queue.unshift({x:x, y:y});
         this.last = this._queue[0];
-	},
+    },
 
-	remove: function() {
-		return this._queue.pop();
-	}
+    remove: function() {
+        return this._queue.pop();
+    }   
 }
 
-var canvas, frames, keystate;
+function setFood() {
+    var empty = [];
+
+    for (var i=0; i<grid.width; i++) {
+        for (var j=0; j<grid.height; j++) {
+            if (grid.get(i, j) === EMPTY) {
+                empty.push({x:i, y:j});
+            }
+        }
+    }
+
+    var pos = empty[Math.floor(Math.random()*empty.length)];
+    grid.set(FRUIT, pos.x, pos.y);
+}
+
+//Game objects
+var canvas, cntx, keystate, frames, score;
+
 function main() {
-	canvas = document.createElement("canvas");
-	canvas.width =COLS*20;
-	canvas.height = ROWS*20;
-	ctx = canvas.getContext("2d");
+    document.getElementById("game_over").style.display = "none";
 
-	var container = document.getElementById("container");
-	frames = 0;
-	keystate = {};
+    canvas = document.createElement("canvas");
+    canvas.width = COLS*20;
+    canvas.height = ROWS*20;
+    cntx = canvas.getContext("2d");
 
-	document.addEventListener("keydown", function(event) {
-		keystate[event.keyCode] = true;
-	});
-	document.addEventListener("keyup", function(event) {
-		delete keystate[event.keyCode];
-	});
+    var container = document.getElementById("container");
 
     container.appendChild(canvas);
+
+    game = false;
+    frames = 0;
+    keystate = {};
+
+    document.addEventListener("keydown", function(event) {
+        keystate[event.keyCode] = true;
+    });
+    document.addEventListener("keyup", function(event) {
+        delete keystate[event.keyCode];
+    });
 
     init();
     loop();
 }
 
 function init() {
-	grid.init(EMPTY, COLS, ROWS);
+    grid.init(EMPTY, COLS, ROWS);
+    score = 0;
+    setScore(score);
 
-	var bp = {x:COLS-1, y:3};
-	block.init(LEFT, bp.x, bp.y);
-	grid.set(BLOCK, bp.x, bp.y);
+    var sp = {x:Math.floor(COLS/2), y:ROWS-1};
+    snake.init(UP, sp.x, sp.y);
+    grid.set(SNAKE, sp.x, sp.y);
+
+    setFood();
 }
 
 function loop() {
-	update();
-	draw();
+    if (game) {
+        update();
+    }
 
-	window.requestAnimationFrame(loop, canvas);
+    draw();
+
+    window.requestAnimationFrame(loop, canvas);
 }
 
 function update() {
-	frames++;
+    frames++;
 
-	if ( keystate[KEY_SPASE] ) {
-		block.direction = DOWN;
-	}
+    if (keystate[KEY_LEFT] && snake.direction !== RIGHT)
+        snake.direction = LEFT;
+    if (keystate[KEY_RIGHT] && snake.direction !== LEFT)
+        snake.direction = RIGHT;
+    if (keystate[KEY_UP] && snake.direction !== DOWN)
+        snake.direction = UP;
+    if (keystate[KEY_DOWN] && snake.direction !== UP)
+        snake.direction = DOWN;
 
-	if (frames%7 === 0) {
-		var bx = block.last.x;
-		var by = block.last.y;
+    if (frames%10 === 0) {
+        var nx = snake.last.x;
+        var ny = snake.last.y;
 
-		switch(block.direction) {
-			case LEFT:
-				bx--;
-				break;
-			case RIGHT:
-				bx++;
-				break;
-			case DOWN:
-				by++;
-				break;
-		}
+        switch (snake.direction) {
+            case LEFT:
+                nx--;
+                break;
+            case RIGHT:
+                nx++;
+                break;
+            case UP:
+                ny--;
+                break;
+            case DOWN:
+                ny++;
+                break;
+        }
 
-		if ( bx < 1 ) {
-			block.direction = RIGHT;
-		}
-		if ( bx > COLS-2 ) {
-			block.direction = LEFT;
-		}
+        if ( 0>nx || nx>grid.width-1 || 0>ny || ny>grid.height-1 || grid.get(nx, ny) === SNAKE ) {
+            document.getElementById("game_over").style.display = "block";
 
-		if ( by > ROWS-2 ) {
+            var tw = canvas.width/grid.width;
+            var th = canvas.height/grid.height;
+            for (var i=0; i<grid.width; i++) {
+                for (var j=0; j<grid.height; j++) {
+                    grid.set(GAME_OVER, i, j);
+                }
+            }
+            return;
+        }
 
-		}
+        if (grid.get(nx, ny) === FRUIT) {
+            score++;
+            setScore(score);
+            var tail = {x:nx, y:ny};
+            setFood();
+        } else {
+            var tail = snake.remove();
+            grid.set(EMPTY, tail.x, tail.y);
+            tail.x = nx;
+            tail.y = ny;
+        }
+        grid.set(SNAKE, tail.x, tail.y);
 
-		var out = block.remove();
-		grid.set(EMPTY, out.x, out.y);
-
-		out.x = bx;
-		out.y = by;
-
-		grid.set(BLOCK, out.x, out.y);
-		block.insert(out.x, out.y);
-
-	}
+        snake.insert(tail.x, tail.y);
+    }
 }
 
 function draw() {
-	var tw = canvas.width/grid.width;
-	var th = canvas.height/grid.height;
+    var tw = canvas.width/grid.width;
+    var th = canvas.height/grid.height;
 
-	for (var i = 0; i < grid.width; i++) {
-		for (var j = 0; j < grid.height; j++) {
-			switch(grid.get(i, j)) {
-				case EMPTY: 
-					ctx.fillStyle = "#fff";
-					break;
-				case BLOCK: 
-					ctx.fillStyle = "#0ff";
-					break;
-				case BUILDING: 
-					ctx.fillStyle = "#f00";
-					break;
-			}
-			ctx.fillRect(i*tw, j*th, tw, th);
-		}
-	}
+    for (var i=0; i<grid.width; i++) {
+        for (var j=0; j<grid.height; j++) {
+            switch (grid.get(i, j)) {
+                case SNAKE:
+                    cntx.fillStyle = "#0ff";
+                    break;
+                case FRUIT:
+                    cntx.fillStyle = "#f00";
+                    break;
+                case EMPTY:
+                    cntx.fillStyle = "#fff";
+                    break;
+                case GAME_OVER:
+                    cntx.fillStyle = "#DCDCDC";
+                    break;
+            }
+            cntx.fillRect(i*tw, j*th, tw, th);
+        }
+    }
+}
+
+function setScore (score) {
+    document.getElementById("score").innerHTML = "Score: " + score;
+}
+
+function action() {
+    game = !game;
+}
+
+function newGame() {
+    game = true;
+    document.getElementById("game_over").style.display = "none";
+    return init();
 }

@@ -1,13 +1,24 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<title>Builder</title>
-    <link rel="stylesheet" tytp="text/css" href="css/styles.css">
+    <meta charset="UTF-8">
+    <title>Snake</title>
+    <link rel="stylesheet" type="text/css" href="css/style.css"/>
     <script type="text/javascript" src="js/main.js"></script>
 </head>
 <body onload="main()">
-    <div id="container"></div>
+    <div align="center">
+        <button onclick="newGame()">New Game</button>
+        <button onclick="action()">Start/Pause</button>
+        <span id="score"></span>
+    </div>
+    <div id="container">
+        <div align="center" class="question" style="display: none" id="game_over">
+            <p>Start new game?</p>
+            <button class="btnYes" onclick="newGame()">Yes</button>
+            <button class="btnNo" onclick="main()">No</button>
+        </div>
+    </div>
 
 </body>
 </html>

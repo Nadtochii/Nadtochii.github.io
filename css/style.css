@@ -1,0 +1,47 @@
+canvas {
+    display: block;
+    position: absolute;
+    border: 1px solid black;
+    margin: auto;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+}
+button {
+	background-color: #fff;
+	border: 1px solid black;
+	height: 40px;
+	width: 100px;
+	border-radius: 5px;
+	margin: 5px;
+}
+button:hover {
+	background-color: #f0f8ff;
+	font-weight: bold;
+}
+button:focus {
+	outline: none; 
+}
+.question {
+	position: relative;
+	border: 1px solid black;
+	z-index: 1;
+	width: 400px;
+	height: 100px;
+	margin: auto;
+	margin-top: 100px;
+	background-color: white;
+}
+.btnYes {
+	background-color: #90EE90;
+}
+.btnYes:hover {
+	background-color: #9ACD32;
+}
+.btnNo {
+	background-color: #FFE4E1;
+}
+.btnNo:hover {
+	background-color: red;
+}
